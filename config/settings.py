@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'apps.payments',
     'apps.coupons',
     'apps.reviews',
+    'apps.invoices',
 ]
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

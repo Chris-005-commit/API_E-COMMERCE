@@ -40,14 +40,16 @@ INSTALLED_APPS = [
 
     'rest_framework',
 
+
     'apps.products',
     'apps.cart',
     'apps.orders',
-    'apps.payments',
-    'apps.coupons',
     'apps.reviews',
-    'apps.invoices',
+    'apps.coupons',
+    'apps.payments',
+    
 ]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

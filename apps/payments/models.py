@@ -1,14 +1,22 @@
 from django.db import models
+
 from apps.orders.models import Order
 
 
 class Payment(models.Model):
 
+    PAYMENT_METHOD_CHOICES = [
+        ('card', 'Card'),
+        ('transfer', 'Transfer'),
+        ('cash', 'Cash'),
+        ('mercadopago', 'MercadoPago'),
+    ]
+
     STATUS_CHOICES = [
         ('pending', 'Pending'),
-        ('paid', 'Paid'),
-        ('failed', 'Failed'),
-        ('refunded', 'Refunded'),
+        ('approved', 'Approved'),
+        ('rejected', 'Rejected'),
+        ('cancelled', 'Cancelled'),
     ]
 
     order = models.OneToOneField(
@@ -22,19 +30,15 @@ class Payment(models.Model):
         decimal_places=2
     )
 
+    payment_method = models.CharField(
+        max_length=30,
+        choices=PAYMENT_METHOD_CHOICES
+    )
+
     status = models.CharField(
-        max_length=20,
+        max_length=30,
         choices=STATUS_CHOICES,
         default='pending'
-    )
-
-    payment_method = models.CharField(
-        max_length=50
-    )
-
-    transaction_id = models.CharField(
-        max_length=100,
-        unique=True
     )
 
     created_at = models.DateTimeField(
@@ -42,4 +46,4 @@ class Payment(models.Model):
     )
 
     def __str__(self):
-        return f"Pago #{self.id} - {self.status}"
+        return f"Payment #{self.id} - {self.status}"

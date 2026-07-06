@@ -5,7 +5,6 @@ from .models import Order, OrderItem
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-
     list_display = (
         'id',
         'user',
@@ -21,7 +20,6 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-
     list_display = (
         'id',
         'order',

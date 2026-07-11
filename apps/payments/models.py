@@ -47,3 +47,16 @@ class Payment(models.Model):
 
     def __str__(self):
         return f"Payment #{self.id} - {self.status}"
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        
+        order = self.order
+        if self.status == 'approved':
+            if order.status != 'paid':
+                order.status = 'paid'
+                order.save()
+        elif self.status == 'cancelled':
+            if order.status != 'cancelled':
+                order.status = 'cancelled'
+                order.save()

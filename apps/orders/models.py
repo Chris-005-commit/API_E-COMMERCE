@@ -34,6 +34,41 @@ class Order(models.Model):
     def __str__(self):
         return f"Order #{self.id} - {self.user.username}"
 
+    def save(self, *args, **kwargs):
+        if self.id:
+            try:
+                old_order = Order.objects.get(id=self.id)
+                old_status = old_order.status
+                new_status = self.status
+                
+                if new_status == 'cancelled' and old_status != 'cancelled':
+                    for item in self.items.all():
+                        variant = item.product_variant
+                        variant.stock += item.quantity
+                        variant.save()
+                        
+                        product = variant.product
+                        product.stock += item.quantity
+                        product.save()
+                        
+                elif old_status == 'cancelled' and new_status in ['pending', 'paid']:
+                    for item in self.items.all():
+                        variant = item.product_variant
+                        if variant.stock < item.quantity:
+                            raise ValueError(f"No hay suficiente stock para la variante '{variant}' y reactivar la orden.")
+                            
+                    for item in self.items.all():
+                        variant = item.product_variant
+                        variant.stock -= item.quantity
+                        variant.save()
+                        
+                        product = variant.product
+                        product.stock = max(0, product.stock - item.quantity)
+                        product.save()
+            except Order.DoesNotExist:
+                pass
+        super().save(*args, **kwargs)
+
 
 class OrderItem(models.Model):
 

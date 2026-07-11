@@ -35,11 +35,15 @@ class Order(models.Model):
         return f"Order #{self.id} - {self.user.username}"
 
     def save(self, *args, **kwargs):
+        is_paid_transition = False
         if self.id:
             try:
                 old_order = Order.objects.get(id=self.id)
                 old_status = old_order.status
                 new_status = self.status
+                
+                if new_status == 'paid' and old_status != 'paid':
+                    is_paid_transition = True
                 
                 if new_status == 'cancelled' and old_status != 'cancelled':
                     for item in self.items.all():
@@ -67,7 +71,26 @@ class Order(models.Model):
                         product.save()
             except Order.DoesNotExist:
                 pass
+                
         super().save(*args, **kwargs)
+        
+        if is_paid_transition:
+            from apps.invoices.models import Invoice
+            from apps.invoices.services import generate_invoice_pdf
+            import datetime
+            
+            try:
+                invoice = self.invoice
+            except Invoice.DoesNotExist:
+                year = datetime.datetime.now().year
+                invoice_number = f"FAC-{year}-{self.id:04d}"
+                
+                invoice = Invoice.objects.create(
+                    order=self,
+                    invoice_number=invoice_number,
+                    total_amount=self.total_amount
+                )
+                generate_invoice_pdf(invoice)
 
 
 class OrderItem(models.Model):

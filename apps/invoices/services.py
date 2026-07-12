@@ -167,18 +167,26 @@ def generate_invoice_pdf(invoice):
     story.append(Spacer(1, 20))
 
     # 4. Sección de Totales (Tabla en la esquina derecha)
-    totals_data = [
-        [Paragraph("<b>Subtotal:</b>", style_body), Paragraph(f"${order.total_amount:.2f}", style_body)],
-        [Paragraph("<b>Total a Pagar:</b>", style_body_bold), Paragraph(f"${order.total_amount:.2f}", style_body_bold)]
-    ]
-    totals_table = Table(totals_data, colWidths=[1.8*inch, 1.4*inch])
+    subtotal_bruto = sum(item.unit_price * item.quantity for item in order.items.all())
+    discount_amount = max(0, subtotal_bruto - order.total_amount)
+
+    totals_data = []
+    if order.coupon:
+        totals_data.append([Paragraph("<b>Subtotal Bruto:</b>", style_body), Paragraph(f"${subtotal_bruto:.2f}", style_body)])
+        totals_data.append([Paragraph(f"<b>Descuento ({order.coupon.code} - {order.coupon.discount_percentage}%):</b>", style_body), Paragraph(f"-${discount_amount:.2f}", style_body)])
+        totals_data.append([Paragraph("<b>Total Neto a Pagar:</b>", style_body_bold), Paragraph(f"${order.total_amount:.2f}", style_body_bold)])
+    else:
+        totals_data.append([Paragraph("<b>Subtotal:</b>", style_body), Paragraph(f"${order.total_amount:.2f}", style_body)])
+        totals_data.append([Paragraph("<b>Total a Pagar:</b>", style_body_bold), Paragraph(f"${order.total_amount:.2f}", style_body_bold)])
+
+    totals_table = Table(totals_data, colWidths=[2.2*inch, 1.0*inch])
     totals_table.setStyle(TableStyle([
         ('ALIGN', (0,0), (-1,-1), 'RIGHT'),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
         ('TOPPADDING', (0,0), (-1,-1), 6),
         ('BOTTOMPADDING', (0,0), (-1,-1), 6),
-        ('LINEBELOW', (0,0), (-1,0), 0.5, colors.HexColor('#CBD5E0')),
-        ('BACKGROUND', (0,1), (-1,1), colors.HexColor('#EDF2F7')), # Fondo destacado para el total
+        ('LINEBELOW', (0,0), (-1,-2), 0.5, colors.HexColor('#CBD5E0')),
+        ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor('#EDF2F7')), # Destacar la última fila (Total)
     ]))
     
     # Poner la tabla de totales alineada a la derecha

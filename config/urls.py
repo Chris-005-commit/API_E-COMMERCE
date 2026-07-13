@@ -26,6 +26,7 @@ urlpatterns = [
     path('api/', include('apps.coupons.urls')),
     path('api/', include('apps.payments.urls')),
     path('api/', include('apps.invoices.urls')),
+    path('api/', include('apps.users.urls')),
 ]
 
 from django.conf import settings

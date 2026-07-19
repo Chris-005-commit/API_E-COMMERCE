@@ -20,6 +20,10 @@ class Cart(models.Model):
     def __str__(self):
         return f"Carrito de {self.user.username}"
 
+    @property
+    def total_amount(self):
+        return sum(item.subtotal for item in self.items.all())
+
 
 class CartItem(models.Model):
     # Carrito asociado
@@ -42,3 +46,7 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f"{self.product_variant} x {self.quantity}"
+
+    @property
+    def subtotal(self):
+        return self.quantity * self.product_variant.product.price
